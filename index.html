@@ -1,0 +1,94 @@
+<html>
+    <head>
+        <script>
+            /********************** EDIT CSFP INCOME GUIDELINES EVERY YEAR HERE ***********/
+            var CSFP_INCOME_GUIDELINES = [
+                19578, // household size of 1
+                26377, // household size of 2
+                33176,
+                39975,
+                46774,
+                53573,
+                60372,
+                67171,
+            ]
+            var EACH_ADDITIONAL_HOUSEHOLD_MEMBER = 6799
+            /********************** EDIT CSFP INCOME GUIDELINES EVERY YEAR HERE ***********/
+        </script>
+    </head>
+    <body>
+        <h1>Age Eligability</h1>
+
+        <div>
+            Birthday
+            <input id="birthday_year">
+            <input id="birthday_month">
+            <input id="birthday_date">
+        </div>
+
+        <button onclick="calculateForAge()">CALCULATE</button>
+
+        <div id="age_output" style="background-color: grey;"></div>
+
+        <hr>
+
+        <h1>Income Eligability</h1>
+
+        <div>
+            <input id="household_members">
+            Number in your household
+        </div>
+
+        <div>
+            <input id="yearly_income">
+            Yearly Income
+        </div>
+        <div>
+            <input id="monthly_income">
+            Monthly Income
+        </div>
+
+        <button onclick="calculateForIncome()">CALCULATE</button>
+
+        <div id="income_output" style="background-color: grey;"></div>
+
+        <script>
+            function calculateForAge() {
+                var age = calculateAge()
+                var is_eligable = false
+
+                if (age >= 60) is_eligable = true
+
+                // Output the results
+                if (is_eligable) document.getElementById('output').innerText = "ELIGABLE"
+                else document.getElementById('age_output').innerText = "NOT ELIGABLE"
+            }
+
+            function calculateAge() {
+                var birthday = new Date(
+                    parseInt(document.getElementById('birthday_year').value),
+                    parseInt(document.getElementById('birthday_month').value) - 1,
+                    parseInt(document.getElementById('birthday_date').value),
+                )
+
+                var ageDifMs = Date.now() - birthday.getTime()
+                var ageDate = new Date(ageDifMs) // miliseconds from epoch
+                return Math.abs(ageDate.getUTCFullYear() - 1970)
+            }
+
+            function calculateForIncome() {
+                var number_in_household = parseInt(document.getElementById('household_members').value)
+                var yearly_income = parseInt(document.getElementById('yearly_income').value)
+
+                if (!yearly_income) {
+                    yearly_income = parseInt(document.getElementById('monthly_income').value) * 12
+                }
+
+                var income_limit = CSFP_INCOME_GUIDELINES[number_in_household - 1]
+
+                if (yearly_income < income_limit) document.getElementById('income_output').innerText = 'ELIGABLE'
+                else document.getElementById('income_output').innerText = 'NOT ELIGABLE'
+            }
+        </script>
+    </body>
+</html>
