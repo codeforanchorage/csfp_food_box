@@ -1,144 +1,232 @@
+<!DOCTYPE html>
 <html>
-<head>
-    <script>
-        /********************** EDIT CSFP INCOME GUIDELINES EVERY YEAR HERE ***********/
-        var CSFP_INCOME_GUIDELINES = [
-            19578, // household size of 1
-            26377, // household size of 2
-            33176,
-            39975,
-            46774,
-            53573,
-            60372,
-            67171,
-        ]
-        var EACH_ADDITIONAL_HOUSEHOLD_MEMBER = 6799
-        var LAST_YEAR_PFD_AMOUNT = 1020
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Alaska CSFP Eligibility Calculator</title>
 
-        //NOTE: Alaska CSFP income eligibility thresholds are different than those used in other states, they also factor in the Permanent Fund Dividend which is unique to the state.
-        /********************** EDIT CSFP INCOME GUIDELINES EVERY YEAR HERE ***********/
-    </script>
+    <!-- jquery -->
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <!-- momentjs -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!-- fontawesome -->
+    <link rel="stylesheet" href="font-awesome.min.css">
+
     <style>
-        div {
-            margin: 25px;
-        }
-
-        div.birthdate input {
-            width: 50px;
-        }
+      #age_eligible, #income_eligible {
+        font-size: 1.5em;
+        margin-left: 1em;
+      }
+      .panel {
+        margin-top: 1em;
+      }
     </style>
-</head>
-<body>
 
-<h1>Alaska CSFP Eligibility Calculator</h1>
+    <script>
+      /********************** EDIT CSFP INCOME GUIDELINES EVERY YEAR HERE ***********/
+      var CSFP_INCOME_GUIDELINES = [
+        19578, // household size of 1
+        26377, // household size of 2
+        33176,
+        39975,
+        46774,
+        53573,
+        60372,
+        67171,
+      ];
+      var EACH_ADDITIONAL_HOUSEHOLD_MEMBER = 6799;
+      var LAST_YEAR_PFD_AMOUNT = 1020;
+      var AGE_REQUIREMENT = 60; // must be at least 60 years old
+      var CSFP_YEAR = '2017';
 
-<div>The Commodity Supplemental Food Program (CSFP) works to improve the health of low-income elderly persons at least 60 years of age by supplementing their diets with nutritious USDA Foods. To be eligible for the program, an applicant must meet the age and income requirements. This calculator helps identify eligible CSFP applicants in Alaska only. CSFP income eligibility thresholds for Alaska are different than those used in other states.</div>
+      // NOTE: Alaska CSFP income eligibility thresholds are different than those
+      // used in other states, they also factor in the Permanent Fund Dividend which
+      // is unique to the state.
+      /********************** EDIT CSFP INCOME GUIDELINES EVERY YEAR HERE ***********/
+    </script>
+  </head>
 
-<hr>
+  <body>
+    <div class="container">
+      <div class="page-header">
+        <h1>Alaska CSFP Eligibility Calculator</h1>
+      </div>
+      <div>
+        The Commodity Supplemental Food Program (CSFP) works to improve the health of low-income elderly persons at least 60 years of age by supplementing their diets with nutritious USDA Foods. To be eligible for the program, an applicant must meet the age
+        and income requirements. This calculator helps identify eligible CSFP applicants in Alaska only. CSFP income eligibility thresholds for Alaska are different than those used in other states.
+      </div>
 
-<h2>Age Eligability</h2>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title">Age Eligibility</h2>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label for "birthdate">Birth Date </label>
+            <input id="birthdate" type="date" onchange="clearEligibility('age')">
+          </div>
+          <button class="btn btn-default" onclick="checkAge()">CHECK</button>
+          <span id="age_eligible"></span>
+        </div>
+      </div>
 
-<form onsubmit="return calculateForAge()">
-    <div class="birthdate">
-        Birth Date: <br>
-        Month <input id="birthday_month"> <br>
-        Day <input id="birthday_date"> <br>
-        Year <input id="birthday_year"> <br>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title">Income Eligibility</h2>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label for="household_members">How many people live in your household?</label>
+            <input type="number" id="household_members" onchange="clearEligibility('income')">
+          </div>
+
+          <div class="form-group">
+             <label>Total Household income before deductions (enter yearly or monthly numbers)</label> <br/>$
+            <input id="yearly_income" type="number" oninput="updateMonth()" onchange="clearEligibility('income')"> per year <br/> $
+            <input id="monthly_income" type="number" oninput="updateYear()" onchange="clearEligibility('income')"> per month
+          </div>
+
+          <div class="form-group">
+            <label for="number_pfds">Did anyone in your household receive the latest AK Permanent Fund? If yes, how many?</label>
+            <input type="number" id="number_pfds" onchange="clearEligibility('income')">
+          </div>
+
+          <div>
+            <label>If yes, did you include this amount in your total household income listed above?</label>
+            <input type="radio" name="pfd_included" id="pfd_included" value="yes" onchange="clearEligibility('income')"> <label for="pfd_included">Yes</label>
+            <input type="radio" name="pfd_included" id="pfd_not_included" value="no" onchange="clearEligibility('income')"> <label for="pfd_not_included">No</label>
+          </div>
+
+          <button onclick="checkIncome()" class="btn btn-default">CHECK</button>
+
+          <span id="income_eligible"></span>
+        </div>
+      </div>
+
+      <div class="text-center">For additional information about CSFP, see the <a href='https://www.fns.usda.gov/csfp/commodity-supplemental-food-program-csfp' target="_blank">USDA website</a>. For Alaskans interested in participating in CSFP, apply at a site near you. <br/>If you have a question about
+        this site, email us here.
+      </div>
+      <button class="btn btn-default" onclick="reset()">Clear and Restart</button>
     </div>
-    <input type="submit" value="CALCULATE">
-</form>
 
-<div id="age_output" style="background-color: grey;"></div>
+    <script>
+      function reset() {
+        clearEligibility('age');
+        clearEligibility('income');
+        $('input').val('');
+        $('input[type=radio]').prop('checked', false);
+      }
 
-<hr>
+      function clearEligibility(id) {
+        var el = document.getElementById(id + '_eligible');
+        el.innerHTML = '';
+        el.classList.remove('text-danger');
+        el.classList.remove('text-warning');
+        el.classList.remove('text-success');
 
-<h2>Income Eligability</h2>
+        return el;
+      }
 
-<div>
-    How many people live in your household? <input type="number" id="household_members">
-</div>
-
-<div>
-    Income: <br>
-    Total Household income before deductions: <br>
-    $<input id="yearly_income" type="number" oninput="updateMonth()"> per year <br>
-    $<input id="monthly_income" type="number" oninput="updateYear()"> per month
-</div>
-
-<div>
-    Did anyone in your household receive the latest AK Permanent Fund?
-    If yes, how many? <input type="number" id="number_pfds">
-</div>
-
-<div>
-    If yes, did you incude this amount in your total household income listed above?
-    <input type="radio" name="pfd_included" value="yes"> Yes
-    <input type="radio" name="pfd_included" id="pfd_not_included" value="no"> No
-</div>
-
-<button onclick="calculateForIncome()">CALCULATE</button>
-
-<div id="income_output" style="background-color: grey;"></div>
-
-<hr>
-
-<div>For additional information about CSFP, see the <a href='https://www.fns.usda.gov/csfp/commodity-supplemental-food-program-csfp'>USDA website</a>;. For Alaskans interested in participating in CSFP, apply at a site near you. If you have a question about this site, email us here.
-</div>
-
-<script>
-    function updateYear() {
+      function updateYear() {
         var month_field = document.getElementById('monthly_income');
         var year_field = document.getElementById('yearly_income');
 
         year_field.value = month_field.value * 12;
-    }
+      }
 
 
-    function updateMonth() {
+      function updateMonth() {
         var month_field = document.getElementById('monthly_income');
         var year_field = document.getElementById('yearly_income');
 
-        month_field.value = Math.floor( year_field.value / 12 );
-    }
+        month_field.value = Math.floor(year_field.value / 12);
+      }
 
-    function calculateForAge() {
-        var age = calculateAge()
-        var is_eligable = false
+      /**
+       * determine if person is eligible based on age
+       */
+      function checkAge() {
+        var dob = document.getElementById('birthdate').value;
+        var isEligible = moment().diff(dob, 'years', true) >= AGE_REQUIREMENT;
 
-        if (age >= 60) is_eligable = true
+        // indicate the eligibility
+        var el = clearEligibility('age');
+        if (isEligible) {
+          el.innerHTML = '<i class="fa fa-check-circle"></i> Eligible based on age.';
+          el.classList.add('text-success');
+        } else {
+          el.innerHTML = '<i class="fa fa-ban"></i> Not eligible at this time.';
+          el.classList.add('text-danger');
+        }
+        // return false so it doesn't try to submit the form
+        return false;
+      }
 
-        // Output the results
-        if (is_eligable) document.getElementById('age_output').innerText = "ELIGABLE"
-        else document.getElementById('age_output').innerText = "NOT ELIGABLE"
+      function checkIncome() {
+        var isEligible = false;
+        var msg = "";
+        var household_members = parseInt(document.getElementById('household_members').value);
+        var yearly_income = parseInt(document.getElementById('yearly_income').value);
+        var number_pfds = parseInt(document.getElementById('number_pfds').value);
+        var pfd_included = (document.getElementById('pfd_not_included').checked ? false :
+          (document.getElementById('pfd_included').checked ? true : null));
+        var el = clearEligibility('income');
 
-        return false
-    }
-
-    function calculateAge() {
-        var birthday = new Date(
-            parseInt(document.getElementById('birthday_year').value),
-            parseInt(document.getElementById('birthday_month').value) - 1,
-            parseInt(document.getElementById('birthday_date').value)
-        )
-
-        var ageDifMs = Date.now() - birthday.getTime()
-        var ageDate = new Date(ageDifMs) // miliseconds from epoch
-        return Math.abs(ageDate.getUTCFullYear() - 1970)
-    }
-
-    function calculateForIncome() {
-        var number_in_household = parseInt(document.getElementById('household_members').value)
-        var yearly_income = parseInt(document.getElementById('yearly_income').value)
-
-        if (number_pfds && document.getElementById('pfd_not_included').checked) {
-            yearly_income = yearly_income - number_pfds * LAST_YEAR_PFD_AMOUNT
+        if (isNaN(household_members) || household_members < 1) {
+          msg = '<i class="fa fa-question-circle"></i> We need to know how many people live in your household.';
+          document.getElementById('household_members').focus();
+        } else if (isNaN(yearly_income) || yearly_income < 1) {
+          msg = '<i class="fa fa-question-circle"></i> We need to know your income.';
+          document.getElementById('yearly_income').focus();
+        } else if (isNaN(number_pfds)) {
+          msg = '<i class="fa fa-question-circle"></i> We need to know if anyone received a PFD.';
+          document.getElementById('number_pfds').focus();
+        } else if (number_pfds > household_members) {
+          msg = '<i class="fa fa-question-circle"></i> You claimed ' + number_pfds + ' PFD recipients but there are only ' + household_members + ' people in your household.';
+          document.getElementById('number_pfds').focus();
+        } else if (pfd_included === null && number_pfds > 0) {
+          msg = '<i class="fa fa-question-circle"></i> We need to know if included the PFDs in your income.';
         }
 
-        var income_limit = CSFP_INCOME_GUIDELINES[number_in_household - 1]
+        if (msg !== "") {
+          el.innerHTML = msg;
+          el.classList.add('text-warning');
+          return;
+        }
 
-        if (yearly_income < income_limit) document.getElementById('income_output').innerText = 'ELIGABLE'
-        else document.getElementById('income_output').innerText = 'NOT ELIGABLE'
-    }
-</script>
-</body>
+        // determine the income limit
+        if (household_members <= CSFP_INCOME_GUIDELINES.length) {
+          income_limit = CSFP_INCOME_GUIDELINES[household_members - 1];
+        } else {
+          income_limit = CSFP_INCOME_GUIDELINES[CSFP_INCOME_GUIDELINES.length - 1];
+          income_limit = income_limit + (household_members - CSFP_INCOME_GUIDELINES.length) * EACH_ADDITIONAL_HOUSEHOLD_MEMBER;
+        }
+
+        // determine candidate's annual income
+        if (number_pfds > 0 && !pfd_included) {
+          yearly_income = yearly_income + number_pfds * LAST_YEAR_PFD_AMOUNT;
+        }
+
+        isEligible = yearly_income < income_limit;
+        if (isEligible) {
+          el.innerHTML = '<i class="fa fa-check-circle"></i> Eligible based on income.';
+          el.classList.add('text-success');
+        } else {
+          el.innerHTML = '<i class="fa fa-ban"></i> Not eligible at this time. (' + yearly_income + '/' + income_limit + ')';
+          el.classList.add('text-danger');
+        }
+      }
+
+      // this is to show the year so the user will know if the limits have been set for this year
+      $(document).ready(function () {
+        $('div.page-header').find('h1').text(CSFP_YEAR + ' Alaska CSFP Eligibility Calculator');
+      });
+    </script>
+  </body>
 </html>
