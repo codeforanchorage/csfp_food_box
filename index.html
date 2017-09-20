@@ -1,94 +1,144 @@
 <html>
-    <head>
-        <script>
-            /********************** EDIT CSFP INCOME GUIDELINES EVERY YEAR HERE ***********/
-            var CSFP_INCOME_GUIDELINES = [
-                19578, // household size of 1
-                26377, // household size of 2
-                33176,
-                39975,
-                46774,
-                53573,
-                60372,
-                67171,
-            ]
-            var EACH_ADDITIONAL_HOUSEHOLD_MEMBER = 6799
-            /********************** EDIT CSFP INCOME GUIDELINES EVERY YEAR HERE ***********/
-        </script>
-    </head>
-    <body>
-        <h1>Age Eligability</h1>
+<head>
+    <script>
+        /********************** EDIT CSFP INCOME GUIDELINES EVERY YEAR HERE ***********/
+        var CSFP_INCOME_GUIDELINES = [
+            19578, // household size of 1
+            26377, // household size of 2
+            33176,
+            39975,
+            46774,
+            53573,
+            60372,
+            67171,
+        ]
+        var EACH_ADDITIONAL_HOUSEHOLD_MEMBER = 6799
+        var LAST_YEAR_PFD_AMOUNT = 1020
 
-        <div>
-            Birthday
-            <input id="birthday_year">
-            <input id="birthday_month">
-            <input id="birthday_date">
-        </div>
+        //NOTE: Alaska CSFP income eligibility thresholds are different than those used in other states, they also factor in the Permanent Fund Dividend which is unique to the state.
+        /********************** EDIT CSFP INCOME GUIDELINES EVERY YEAR HERE ***********/
+    </script>
+    <style>
+        div {
+            margin: 25px;
+        }
 
-        <button onclick="calculateForAge()">CALCULATE</button>
+        div.birthdate input {
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
 
-        <div id="age_output" style="background-color: grey;"></div>
+<h1>Alaska CSFP Eligibility Calculator</h1>
 
-        <hr>
+<div>The Commodity Supplemental Food Program (CSFP) works to improve the health of low-income elderly persons at least 60 years of age by supplementing their diets with nutritious USDA Foods. To be eligible for the program, an applicant must meet the age and income requirements. This calculator helps identify eligible CSFP applicants in Alaska only. CSFP income eligibility thresholds for Alaska are different than those used in other states.</div>
 
-        <h1>Income Eligability</h1>
+<hr>
 
-        <div>
-            <input id="household_members">
-            Number in your household
-        </div>
+<h2>Age Eligability</h2>
 
-        <div>
-            <input id="yearly_income">
-            Yearly Income
-        </div>
-        <div>
-            <input id="monthly_income">
-            Monthly Income
-        </div>
+<form onsubmit="return calculateForAge()">
+    <div class="birthdate">
+        Birth Date: <br>
+        Month <input id="birthday_month"> <br>
+        Day <input id="birthday_date"> <br>
+        Year <input id="birthday_year"> <br>
+    </div>
+    <input type="submit" value="CALCULATE">
+</form>
 
-        <button onclick="calculateForIncome()">CALCULATE</button>
+<div id="age_output" style="background-color: grey;"></div>
 
-        <div id="income_output" style="background-color: grey;"></div>
+<hr>
 
-        <script>
-            function calculateForAge() {
-                var age = calculateAge()
-                var is_eligable = false
+<h2>Income Eligability</h2>
 
-                if (age >= 60) is_eligable = true
+<div>
+    How many people live in your household? <input type="number" id="household_members">
+</div>
 
-                // Output the results
-                if (is_eligable) document.getElementById('output').innerText = "ELIGABLE"
-                else document.getElementById('age_output').innerText = "NOT ELIGABLE"
-            }
+<div>
+    Income: <br>
+    Total Household income before deductions: <br>
+    $<input id="yearly_income" type="number" oninput="updateMonth()"> per year <br>
+    $<input id="monthly_income" type="number" oninput="updateYear()"> per month
+</div>
 
-            function calculateAge() {
-                var birthday = new Date(
-                    parseInt(document.getElementById('birthday_year').value),
-                    parseInt(document.getElementById('birthday_month').value) - 1,
-                    parseInt(document.getElementById('birthday_date').value),
-                )
+<div>
+    Did anyone in your household receive the latest AK Permanent Fund?
+    If yes, how many? <input type="number" id="number_pfds">
+</div>
 
-                var ageDifMs = Date.now() - birthday.getTime()
-                var ageDate = new Date(ageDifMs) // miliseconds from epoch
-                return Math.abs(ageDate.getUTCFullYear() - 1970)
-            }
+<div>
+    If yes, did you incude this amount in your total household income listed above?
+    <input type="radio" name="pfd_included" value="yes"> Yes
+    <input type="radio" name="pfd_included" id="pfd_not_included" value="no"> No
+</div>
 
-            function calculateForIncome() {
-                var number_in_household = parseInt(document.getElementById('household_members').value)
-                var yearly_income = parseInt(document.getElementById('yearly_income').value)
+<button onclick="calculateForIncome()">CALCULATE</button>
 
-                if (!yearly_income) {
-                    yearly_income = parseInt(document.getElementById('monthly_income').value) * 12
-                }
+<div id="income_output" style="background-color: grey;"></div>
 
-                var income_limit = CSFP_INCOME_GUIDELINES[number_in_household - 1]
+<hr>
 
-                if (yearly_income < income_limit) document.getElementById('income_output').innerText = 'ELIGABLE'
-                else document.getElementById('income_output').innerText = 'NOT ELIGABLE'
-            }
-        </script>
-    </body>
+<div>For additional information about CSFP, see the <a href='https://www.fns.usda.gov/csfp/commodity-supplemental-food-program-csfp'>USDA website</a>;. For Alaskans interested in participating in CSFP, apply at a site near you. If you have a question about this site, email us here.
+</div>
+
+<script>
+    function updateYear() {
+        var month_field = document.getElementById('monthly_income');
+        var year_field = document.getElementById('yearly_income');
+
+        year_field.value = month_field.value * 12;
+    }
+
+
+    function updateMonth() {
+        var month_field = document.getElementById('monthly_income');
+        var year_field = document.getElementById('yearly_income');
+
+        month_field.value = Math.floor( year_field.value / 12 );
+    }
+
+    function calculateForAge() {
+        var age = calculateAge()
+        var is_eligable = false
+
+        if (age >= 60) is_eligable = true
+
+        // Output the results
+        if (is_eligable) document.getElementById('age_output').innerText = "ELIGABLE"
+        else document.getElementById('age_output').innerText = "NOT ELIGABLE"
+
+        return false
+    }
+
+    function calculateAge() {
+        var birthday = new Date(
+            parseInt(document.getElementById('birthday_year').value),
+            parseInt(document.getElementById('birthday_month').value) - 1,
+            parseInt(document.getElementById('birthday_date').value)
+        )
+
+        var ageDifMs = Date.now() - birthday.getTime()
+        var ageDate = new Date(ageDifMs) // miliseconds from epoch
+        return Math.abs(ageDate.getUTCFullYear() - 1970)
+    }
+
+    function calculateForIncome() {
+        var number_in_household = parseInt(document.getElementById('household_members').value)
+        var yearly_income = parseInt(document.getElementById('yearly_income').value)
+
+        if (number_pfds && document.getElementById('pfd_not_included').checked) {
+            yearly_income = yearly_income - number_pfds * LAST_YEAR_PFD_AMOUNT
+        }
+
+        var income_limit = CSFP_INCOME_GUIDELINES[number_in_household - 1]
+
+        if (yearly_income < income_limit) document.getElementById('income_output').innerText = 'ELIGABLE'
+        else document.getElementById('income_output').innerText = 'NOT ELIGABLE'
+    }
+</script>
+</body>
 </html>
