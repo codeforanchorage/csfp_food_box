@@ -39,10 +39,11 @@
         53573,
         60372,
         67171,
-      ]
-      var EACH_ADDITIONAL_HOUSEHOLD_MEMBER = 6799
-      var LAST_YEAR_PFD_AMOUNT = 1020
-      var AGE_REQUIREMENT = 60 // must be at least 60 years old
+      ];
+      var EACH_ADDITIONAL_HOUSEHOLD_MEMBER = 6799;
+      var LAST_YEAR_PFD_AMOUNT = 1020;
+      var AGE_REQUIREMENT = 60; // must be at least 60 years old
+      var CSFP_YEAR = '2017';
 
       // NOTE: Alaska CSFP income eligibility thresholds are different than those
       // used in other states, they also factor in the Permanent Fund Dividend which
@@ -108,7 +109,7 @@
         </div>
       </div>
 
-      <div>For additional information about CSFP, see the <a href='https://www.fns.usda.gov/csfp/commodity-supplemental-food-program-csfp'>USDA website</a>;. For Alaskans interested in participating in CSFP, apply at a site near you. If you have a question about
+      <div class="text-center">For additional information about CSFP, see the <a href='https://www.fns.usda.gov/csfp/commodity-supplemental-food-program-csfp' target="_blank">USDA website</a>. For Alaskans interested in participating in CSFP, apply at a site near you. <br/>If you have a question about
         this site, email us here.
       </div>
       <button class="btn btn-default" onclick="reset()">Clear and Restart</button>
@@ -221,6 +222,11 @@
           el.classList.add('text-danger');
         }
       }
+
+      // this is to show the year so the user will know if the limits have been set for this year
+      $(document).ready(function () {
+        $('div.page-header').find('h1').text(CSFP_YEAR + ' Alaska CSFP Eligibility Calculator');
+      });
     </script>
   </body>
 </html>
